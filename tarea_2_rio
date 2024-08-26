@@ -1,0 +1,56 @@
+# Estado inicial: (orilla inicial, orilla final)
+# orilla inicial y orilla final contienen las cosas restantes en cada orilla
+initial_state = (("gallina", "maiz", "zorro"), ())
+
+# Definir las reglas del juego
+def is_valid_state(state):
+    # Chequear si un estado es seguro (no se pueden dejar la gallina y el maíz, o el zorro y la gallina solos)
+    for side in state:
+        if "gallina" in side and "maiz" in side and len(side) == 2:
+            return False
+        if "gallina" in side and "zorro" in side and len(side) == 2:
+            return False
+    return True
+
+def move(state, item):
+    orilla_inicial, orilla_final = state
+    
+    # Mover el item de una orilla a la otra
+    if item in orilla_inicial:
+        orilla_inicial = tuple(x for x in orilla_inicial if x != item)
+        orilla_final = tuple(list(orilla_final) + [item])
+    else:
+        orilla_final = tuple(x for x in orilla_final if x != item)
+        orilla_inicial = tuple(list(orilla_inicial) + [item])
+    
+    return orilla_inicial, orilla_final
+
+# Usamos DFS para encontrar la solución
+def solve(state, history):
+    # Si todos los elementos están en la orilla final, hemos terminado
+    if len(state[1]) == 3:
+        return history
+    
+    for item in ["gallina", "maiz", "zorro", ""]:
+        # Hacer un movimiento
+        new_state = move(state, item)
+        
+        # Asegurarse de que el nuevo estado sea válido y no repetir un estado anterior
+        if is_valid_state(new_state) and new_state not in history:
+            solution = solve(new_state, history + [new_state])
+            if solution:
+                return solution
+
+    return None
+
+# Encontrar la solución
+initial_history = [initial_state]
+solution = solve(initial_state, initial_history)
+
+# Imprimir la solución paso a paso
+if solution:
+    print("Solución encontrada:")
+    for i, step in enumerate(solution):
+        print(f"Paso {i}: {step}")
+else:
+    print("No se encontró solución.")
