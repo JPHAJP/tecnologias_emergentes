@@ -1,56 +1,140 @@
+from collections import deque
+
 # Estado inicial: (orilla inicial, orilla final)
 # orilla inicial y orilla final contienen las cosas restantes en cada orilla
-initial_state = (("gallina", "maiz", "zorro"), ())
+# Incluimos al barquero ("barquero") inicialmente en la orilla inicial
+initial_state = (("gallina", "maiz", "zorro", "barquero"), ())
 
 # Definir las reglas del juego
 def is_valid_state(state):
-    # Chequear si un estado es seguro (no se pueden dejar la gallina y el maíz, o el zorro y la gallina solos)
+    # Chequear si un estado es seguro (no se pueden dejar la gallina y el maíz, o el zorro y la gallina solos sin el barquero)
     for side in state:
-        if "gallina" in side and "maiz" in side and len(side) == 2:
-            return False
-        if "gallina" in side and "zorro" in side and len(side) == 2:
-            return False
+        if "barquero" not in side:
+            if "gallina" in side and "maiz" in side:
+                return False
+            if "gallina" in side and "zorro" in side:
+                return False
     return True
 
-def move(state, item):
+def move(state, item, direction):
     orilla_inicial, orilla_final = state
     
-    # Mover el item de una orilla a la otra
-    if item in orilla_inicial:
-        orilla_inicial = tuple(x for x in orilla_inicial if x != item)
-        orilla_final = tuple(list(orilla_final) + [item])
-    else:
-        orilla_final = tuple(x for x in orilla_final if x != item)
-        orilla_inicial = tuple(list(orilla_inicial) + [item])
+    if direction == "to_final":
+        if item:  # Mover un item con el barquero
+            orilla_inicial = tuple(x for x in orilla_inicial if x != item and x != "barquero")
+            orilla_final = tuple(list(orilla_final) + [item, "barquero"])
+        else:  # Mover solo el barquero
+            orilla_inicial = tuple(x for x in orilla_inicial if x != "barquero")
+            orilla_final = tuple(list(orilla_final) + ["barquero"])
+    elif direction == "to_initial":
+        if item:  # Mover un item con el barquero
+            orilla_final = tuple(x for x in orilla_final if x != item and x != "barquero")
+            orilla_inicial = tuple(list(orilla_inicial) + [item, "barquero"])
+        else:  # Mover solo el barquero
+            orilla_final = tuple(x for x in orilla_final if x != "barquero")
+            orilla_inicial = tuple(list(orilla_inicial) + ["barquero"])
     
     return orilla_inicial, orilla_final
 
-# Usamos DFS para encontrar la solución
-def solve(state, history):
-    # Si todos los elementos están en la orilla final, hemos terminado
-    if len(state[1]) == 3:
-        return history
-    
-    for item in ["gallina", "maiz", "zorro", ""]:
-        # Hacer un movimiento
-        new_state = move(state, item)
+def solve(state, method="BFS"):
+    if method == "BFS":
+        return solve_bfs(state)
+    elif method == "DFS":
+        return solve_dfs(state)
+    else:
+        raise ValueError("Método no soportado: elija 'BFS' o 'DFS'.")
+
+# Usamos BFS para encontrar la solución
+def solve_bfs(state):
+    queue = deque([(state, [state], "to_final")])  # Guardar estado, historial, y dirección del barquero
+
+    while queue:
+        current_state, history, direction = queue.popleft()
         
-        # Asegurarse de que el nuevo estado sea válido y no repetir un estado anterior
-        if is_valid_state(new_state) and new_state not in history:
-            solution = solve(new_state, history + [new_state])
-            if solution:
-                return solution
+        if len(current_state[1]) == 4:  # Si la orilla final tiene todos los elementos incluyendo el barquero
+            return history
+        
+        orilla_inicial, orilla_final = current_state
+        
+        if direction == "to_final":
+            for item in orilla_inicial:
+                if item != "barquero":  # No necesitamos mover al barquero como un item separado
+                    new_state = move(current_state, item, "to_final")
+                    if is_valid_state(new_state) and new_state not in history:
+                        queue.append((new_state, history + [new_state], "to_initial"))
+            
+            # Opción de mover solo el barquero
+            new_state = move(current_state, None, "to_final")
+            if is_valid_state(new_state) and new_state not in history:
+                queue.append((new_state, history + [new_state], "to_initial"))
+
+        elif direction == "to_initial":
+            for item in orilla_final:
+                if item != "barquero":  # No necesitamos mover al barquero como un item separado
+                    new_state = move(current_state, item, "to_initial")
+                    if is_valid_state(new_state) and new_state not in history:
+                        queue.append((new_state, history + [new_state], "to_final"))
+
+            # Opción de mover solo el barquero
+            new_state = move(current_state, None, "to_initial")
+            if is_valid_state(new_state) and new_state not in history:
+                queue.append((new_state, history + [new_state], "to_final"))
 
     return None
 
-# Encontrar la solución
-initial_history = [initial_state]
-solution = solve(initial_state, initial_history)
+# Usamos DFS recursivo para encontrar la solución
+def solve_dfs(state, history=None, direction="to_final"):
+    if history is None:
+        history = [state]
+
+    if len(state[1]) == 4:  # Si la orilla final tiene todos los elementos incluyendo el barquero
+        return history
+
+    orilla_inicial, orilla_final = state
+    
+    if direction == "to_final":
+        for item in orilla_inicial:
+            if item != "barquero":  # No necesitamos mover al barquero como un item separado
+                new_state = move(state, item, "to_final")
+                if is_valid_state(new_state) and new_state not in history:
+                    result = solve_dfs(new_state, history + [new_state], "to_initial")
+                    if result:
+                        return result
+        
+        # Opción de mover solo el barquero
+        new_state = move(state, None, "to_final")
+        if is_valid_state(new_state) and new_state not in history:
+            result = solve_dfs(new_state, history + [new_state], "to_initial")
+            if result:
+                return result
+
+    elif direction == "to_initial":
+        for item in orilla_final:
+            if item != "barquero":  # No necesitamos mover al barquero como un item separado
+                new_state = move(state, item, "to_initial")
+                if is_valid_state(new_state) and new_state not in history:
+                    result = solve_dfs(new_state, history + [new_state], "to_final")
+                    if result:
+                        return result
+
+        # Opción de mover solo el barquero
+        new_state = move(state, None, "to_initial")
+        if is_valid_state(new_state) and new_state not in history:
+            result = solve_dfs(new_state, history + [new_state], "to_final")
+            if result:
+                return result
+
+    return None
+
+# Encontrar la solución usando BFS o DFS
+method = input("Elija el método de búsqueda (BFS o DFS): ")
+solution = solve(initial_state, method)  # Cambia "BFS" por "DFS" para usar DFS recursivo
 
 # Imprimir la solución paso a paso
 if solution:
     print("Solución encontrada:")
     for i, step in enumerate(solution):
-        print(f"Paso {i}: {step}")
+        orilla_inicial, orilla_final = step
+        print(f"Paso {i}:\nOrilla inicial: {orilla_inicial}\nOrilla final: {orilla_final}")
 else:
     print("No se encontró solución.")
