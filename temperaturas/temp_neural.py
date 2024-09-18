@@ -26,9 +26,9 @@ model = tf.keras.models.Sequential([
 # model.add(tf.keras.layers.Dense(units=3))
 # model.add(tf.keras.layers.Dense(units=1))
 
-model.compile(optimizer=tf.keras.optimizers.Adam(0.5), loss='mse')
+model.compile(optimizer=tf.keras.optimizers.Adam(0.6), loss='mse')
 
-model_history = model.fit(X_train, y_train, epochs=50, validation_split=0.2)
+model_history = model.fit(X_train, y_train, epochs=100, validation_split=0.2)
 
 y_pred = model.predict(X_test)
 
