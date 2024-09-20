@@ -17,7 +17,7 @@ data = pd.read_csv(file_path)
 
 print(data.head())
 
-# Borrar las columnas que no se van a utilizar
+# Borrar las columnas que no se van a utilizar||
 data_cleaned = data.drop(columns=['date', 'street', 'statezip', 'country'])
 
 # Verificar si hay datos nulos
@@ -38,6 +38,7 @@ data_cleaned = data_cleaned.drop(columns=['yr_built', 'yr_renovated'])
 scaler = StandardScaler()
 columns_to_scale = ['price', 'bedrooms', 'bathrooms', 'sqft_living', 'sqft_lot', 'floors', 'waterfront', 'view', 'condition', 'sqft_above', 'sqft_basement', 'house_age']
 data_cleaned[columns_to_scale] = scaler.fit_transform(data_cleaned[columns_to_scale])
+print(data_cleaned.head())
 
 # Codificar variables categóricas
 label_encoder = LabelEncoder()
@@ -71,7 +72,7 @@ scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
 # Dividir los datos en entrenamiento y prueba
-X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=1452)
 
 # Crear y entrenar el modelo de regresión lineal
 model = LinearRegression()
