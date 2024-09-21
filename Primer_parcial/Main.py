@@ -122,7 +122,6 @@ y_pred_n = model.predict(X_test)
 # Calcular métricas
 mse = mean_squared_error(y_test, y_pred_n)
 r2 = r2_score(y_test, y_pred_n)
-#accuracy = model.score(X_test, y_test)
 print('Métricas del modelo neuronal:')
 print('Error cuadrático medio: ', mse)
 print('R2: ', r2)
