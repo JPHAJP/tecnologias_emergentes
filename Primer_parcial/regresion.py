@@ -16,9 +16,10 @@ file_path = 'Primer_parcial/data.csv'
 data = pd.read_csv(file_path)
 
 print(data.head())
+print(data.info())
 
 # Borrar las columnas que no se van a utilizar||
-data_cleaned = data.drop(columns=['date', 'street', 'statezip', 'country'])
+data_cleaned = data.drop(columns=['date', 'street', 'country'])
 
 # Verificar si hay datos nulos
 print('Datos nulos o faltantes:')
@@ -26,6 +27,26 @@ print(data_cleaned.isnull().sum())
 
 # Eliminar datos nulos
 data_cleaned = data_cleaned.dropna()
+
+# Plotear los precios
+sns.displot(data['price'], color='blue')
+plt.axline((data['price'].mean(), 0), (data['price'].mean(), 0.01), color='red', linestyle='--', linewidth=2)
+plt.title('Distribución de los precios')
+plt.show()
+
+# Eliminar los precios con 0
+data_cleaned = data_cleaned[data_cleaned['price'] > 0]
+
+# Variables categóricas
+data_categoricas = data.select_dtypes(include=['object'])
+print(data_categoricas.head())
+
+# Verificar si todos los datos de statezip empiezan con WA
+print(data['statezip'].str.startswith('WA').all())
+
+# Quitar WA de statezip y convertir a entero
+data['statezip'] = data['statezip'].str.replace('WA ', '').astype(int)
+print(data['statezip'].head())
 
 # Creating a new feature 'house_age' and 'renovated' (whether the house was renovated or not)
 data_cleaned['house_age'] = 2024 - data_cleaned['yr_built']
@@ -43,6 +64,7 @@ print(data_cleaned.head())
 # Codificar variables categóricas
 label_encoder = LabelEncoder()
 data_cleaned['city'] = label_encoder.fit_transform(data_cleaned['city'])
+data_cleaned['statezip'] = label_encoder.fit_transform(data_cleaned['statezip'])
 
 # Verificar si hay datos duplicados
 print('Datos duplicados:')
@@ -51,8 +73,9 @@ print(data_cleaned.duplicated().sum())
 # Eliminar datos duplicados
 data_cleaned = data_cleaned.drop_duplicates()
 
-# Verificar si hay valores atípicos
-z_scores = np.abs(stats.zscore(data_cleaned))
+# Verificar si hay valores atípicos que no sean waterfront
+z_scores = np.abs(stats.zscore(data_cleaned.drop(columns=['waterfront'])))
+#z_scores = np.abs(stats.zscore(data_cleaned))
 data_cleaned = data_cleaned[(z_scores < 3).all(axis=1)]  # Eliminar outliers
 
 # Obtener la matriz de correlación
@@ -63,16 +86,28 @@ price_correlation = correlation_matrix["price"].sort_values(ascending=False)
 print('Correlación con el precio:')
 print(price_correlation)
 
+# Plotear los precios   
+sns.displot(data_cleaned['price'], color='blue')
+plt.axline((data_cleaned['price'].mean(), 0), (data['price'].mean(), 0.01), color='red', linestyle='--', linewidth=2)
+plt.title('Distribución de los precios')
+plt.show()
+
+# Analizemos la columna price
+print(data_cleaned['price'].describe())
+prices_zeros = data[data['price'] == 0]
+print(prices_zeros)
+
 # Variables predictoras (X) y objetivo (y)
 X = data_cleaned.drop(columns=['price'])
 y = data_cleaned['price']
 
+# Dividir los datos en entrenamiento y prueba
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
 # Normalización de los datos
 scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
-
-# Dividir los datos en entrenamiento y prueba
-X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
 
 # Crear y entrenar el modelo de regresión lineal
 model = LinearRegression()
@@ -163,6 +198,12 @@ axs[1,1].set_title('Evolución del error en la red neuronal')
 axs[1,1].set_xlabel('Épocas')
 axs[1,1].set_ylabel('MSE')
 axs[1,1].legend()
+
+axs[1,2].plot(range(len(y_pred_l)), y_pred_l, color='blue', alpha=0.5,label='Precio predicho lineal')
+axs[1,2].plot(range(len(y_pred_rf)), y_pred_rf, color='orange', alpha=0.5, label='Precio predicho random forest')
+axs[1,2].plot(range(len(y_test)), y_test, color='red', alpha=0.5, label='Precio real')
+axs[1,2].set_title('Precio Predicho vs Precio Real')
+axs[1,2].legend()
 
 # Mostrar todas las gráficas en una ventana
 plt.tight_layout()
