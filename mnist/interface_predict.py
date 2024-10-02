@@ -8,20 +8,20 @@ import matplotlib.pyplot as plt
 model = tf.keras.models.load_model('mnist/neural.h5')
 
 # Inicializar una imagen en blanco para dibujar
-canvas_image = Image.new("L", (280, 280), 255)  # Cambiar a 280x280 para el lienzo
+canvas_image = Image.new("L", (280*2, 280*2), 255)  # Cambiar a 280x280 para el lienzo
 draw = ImageDraw.Draw(canvas_image)
 
 # Función para crear canvas para dibujar 
 def paint(event):
-    x1, y1 = (event.x - 5), (event.y - 5)  # Grosor del pincel reducido
-    x2, y2 = (event.x + 5), (event.y + 5)
-    cv.create_oval(x1, y1, x2, y2, fill='black', width=5)  # Grosor del pincel en el canvas
+    x1, y1 = (event.x - 4), (event.y - 4)  # Grosor del pincel reducido
+    x2, y2 = (event.x + 6), (event.y + 6)
+    cv.create_oval(x1, y1, x2, y2, fill='black', width=30)  # Grosor del pincel en el canvas
     draw.ellipse([x1, y1, x2, y2], fill='black')
 
 def clear():
     cv.delete('all')
     global canvas_image, draw
-    canvas_image = Image.new("L", (280, 280), 255)  # Reset canvas image
+    canvas_image = Image.new("L", (280*2, 280*2), 255)  # Reset canvas image
     draw = ImageDraw.Draw(canvas_image)  # Reiniciar el objeto de dibujo
     prediction_label.config(text="Predicción: ")  # Limpiar la predicción mostrada
 
@@ -58,23 +58,24 @@ def predict_image():
     # Hacer la predicción
     prediction = model.predict(image_array)
     predicted_digit = prediction[0].argmax()
+    confidence = prediction[0].max()
 
     # Mostrar la imagen invertida y la predicción
-    plt.imshow(image_array[0, :, :, 0], cmap='gray')  # Mostrar la imagen en escala de grises
-    plt.axis('off')
-    plt.title(f'Predicción: {predicted_digit}')
-    plt.show()
+    # plt.imshow(image_array[0, :, :, 0], cmap='gray')  # Mostrar la imagen en escala de grises
+    # plt.axis('off')
+    # plt.title(f'Predicción: {predicted_digit}')
+    # plt.show()
 
     # Mostrar la predicción en la etiqueta
-    prediction_label.config(text=f'Predicción: {predicted_digit}')  # Mostrar la predicción en la etiqueta
+    prediction_label.config(text=f'Predicción: {predicted_digit}, Confianza: {confidence * 100:.2f}%')  # Mostrar la predicción en la etiqueta
 
 # Configurar la GUI de Tkinter
 root = Tk()
 root.title('Predicción de imagen')
-root.geometry('400x500')  # Ajustar altura para incluir más botones
+root.geometry('600x850')  # Ajustar altura para incluir más botones
 
 # Crear un lienzo para dibujar
-cv = Canvas(root, bg='white', width=280, height=280)
+cv = Canvas(root, bg='white', width=280*2, height=280*2)
 cv.pack(pady=20)
 
 # Vincular eventos del ratón al lienzo
