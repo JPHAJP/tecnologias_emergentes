@@ -100,22 +100,124 @@ def kernel_gaussiano():
                         [6, 24, 36, 24, 6],
                         [4, 16, 24, 16, 4],
                         [1, 4, 6, 4, 1]])/412
-    kernel_4 = np.array([[-1,-1,-1], [-1,8,-1], [-1,-1,-1]])
-    
-
+    kernel_4 = np.array([[-1,-1,-1], [-1,8,-1], [-1,-1,-1]]) #detecta mas o menos los bordes
     return kernel_4
 
+def combinar_bordes(img, kernel_x, kernel_y):
+    # Convierte la imagen a escala de grises si aún no lo está
+    if len(img.shape) == 3:
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    
+    # Aplica los filtros
+    grad_x = cv2.filter2D(img, cv2.CV_64F, kernel_x)  # Usa CV_64F para evitar problemas de tipo
+    grad_y = cv2.filter2D(img, cv2.CV_64F, kernel_y)
+    
+    # Calcula la magnitud del gradiente
+    grad_total = np.sqrt(np.square(grad_x) + np.square(grad_y))
+    
+    # Normaliza la imagen para que esté en el rango de 0 a 255
+    grad_total = np.clip(grad_total, 0, 255)
+    grad_total = grad_total.astype(np.uint8)  # Asegura que los valores sean enteros de 8 bits
+    
+    return grad_total
+
+
+
+def kernel_bordes():
+    kernel_vertical = np.array([[-1, 0, 1],
+                                [-2, 0, 2],
+                                [-1, 0, 1]])
+    kernel_horizontal = np.array([[-1, -2, -1],
+                                  [0, 0, 0],
+                                  [1, 2, 1]])
+    return kernel_vertical, kernel_horizontal
 
 def main():
-    img = leer_imagen('image_process/lena.tif')
-    #Filtrar imagen 
-    kernel = kernel_gaussiano()
-    #img_a = filtro(img, kernel) #Lento
-    img_a = filtro_cv2(img, kernel)
-    mostrar_imagen(img, img_a, canal='N/A', selector='Filtro')
+    #img = leer_imagen('image_process/cyberpunk_citty.webp')
+    #img = leer_imagen('image_process/lena.tif')
+    img = leer_imagen('image_process/JP.jpg')
+    kernel_vertical, kernel_horizontal = kernel_bordes()
+
+    #Convertir imagen a escala de grises
+    if len(img.shape) == 3:
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+
+    # Filtrar imagen con los diferentes kernels
+    img_vertical = filtro_cv2(img, kernel_vertical)
+    img_horizontal = filtro_cv2(img, kernel_horizontal)
+    img_combined = combinar_bordes(img, kernel_vertical, kernel_horizontal)
+
+    # Mostrar las imágenes resultantes
+    plt.figure(figsize=(10, 10))
+    plt.subplot(2, 2, 1)
+    plt.imshow(img, cmap='gray')
+    plt.title('Imagen Original')
+    plt.axis('off')
+
+    plt.subplot(2, 2, 2)
+    plt.imshow(img_vertical, cmap='gray')
+    plt.title('Bordes Verticales')
+    plt.axis('off')
+
+    plt.subplot(2, 2, 3)
+    plt.imshow(img_horizontal, cmap='gray')
+    plt.title('Bordes Horizontales')
+    plt.axis('off')
+
+    plt.subplot(2, 2, 4)
+    plt.imshow(img_combined, cmap='gray')
+    plt.title('Todos los Bordes')
+    plt.axis('off')
+
+    plt.tight_layout()
+    plt.show()
+
+
+# def main():
+#     img = leer_imagen('image_process/lena.tif')
+#     #Filtrar imagen 
+#     kernel = kernel_gaussiano()
+#     #img_a = filtro(img, kernel) #Lento
+#     img_a = filtro_cv2(img, kernel)
+#     mostrar_imagen(img, img_a, canal='N/A', selector='Filtro')
 
 if __name__ == '__main__':
     main()
 
-# Tarea hacer un kernel que detecte los bordes verticales, horizontales y todos los bordes en blanco y negro.
-# Plotear img original y las 3 modificadas
+# Los kernels que detectan bordes funcionan gracias a la idea de resaltar cambios rápidos en la intensidad de píxeles de una imagen, 
+# lo cual suele ocurrir en los bordes de los objetos dentro de la imagen. Aquí te explico cada uno de ellos y la lógica detrás:
+
+# ### 1. **Detección de bordes verticales** (Kernel Sobel en dirección X):
+#    ```python
+#    kernel_vertical = np.array([[-1, 0, 1],
+#                                [-2, 0, 2],
+#                                [-1, 0, 1]])
+#    ```
+#    - Este kernel resalta los cambios de intensidad en la dirección horizontal, lo que significa que detecta los bordes verticales.
+#    - Los valores negativos a la izquierda del kernel y los positivos a la derecha indican que busca diferencias grandes de intensidad en esa dirección.
+#    - Cuando aplicamos este kernel, cada píxel se multiplica por su valor correspondiente en la matriz, lo que da como resultado una imagen que destaca 
+#       las áreas donde hay un cambio brusco de intensidad en la dirección horizontal (bordes verticales).
+
+# ### 2. **Detección de bordes horizontales** (Kernel Sobel en dirección Y):
+#    ```python
+#    kernel_horizontal = np.array([[-1, -2, -1],
+#                                  [0, 0, 0],
+#                                  [1, 2, 1]])
+#    ```
+#    - Este kernel detecta cambios de intensidad en la dirección vertical, lo que significa que encuentra bordes horizontales.
+#    - Los valores negativos en la parte superior y positivos en la parte inferior de la matriz indican que busca diferencias grandes de intensidad vertical.
+#    - Esto hace que la salida de la operación resalte las áreas de la imagen donde los cambios de intensidad en la dirección vertical son más pronunciados (bordes horizontales).
+
+# ### 3. **Combinación de bordes**:
+#    Para combinar ambos resultados y obtener todos los bordes de la imagen, se puede calcular la magnitud del gradiente combinando las 
+#    respuestas de los dos filtros (vertical y horizontal):
+#    - La idea es que si un borde existe en cualquier dirección, ya sea vertical u horizontal, debería aparecer en la imagen combinada.
+#    - Para esto, podemos usar la fórmula de la magnitud del gradiente:
+
+#      
+#      magnitud = sqrt{(G_x)^2 + (G_y)^2}
+
+#      donde \( G_x \) es la respuesta del filtro Sobel en la dirección X (bordes verticales), y \( G_y \) es la respuesta en la dirección Y (bordes horizontales).
+
+#    - Esta fórmula es similar a calcular la hipotenusa de un triángulo rectángulo y combina la intensidad de los bordes en ambas direcciones, dándonos una imagen 
+#      que resalta todos los bordes.
