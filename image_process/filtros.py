@@ -94,12 +94,12 @@ def kernel_gaussiano():
                         [1, 1, 1]])/9
     kernel_2 = np.array([[1, 2, 1],
                         [2, 4, 2],
-                        [1, 2, 1]])/16
+                        [1, 2, 1]])/9
     kernel_3 = np.array([[1, 4, 6, 4, 1],
                         [4, 16, 24, 16, 4],
                         [6, 24, 36, 24, 6],
                         [4, 16, 24, 16, 4],
-                        [1, 4, 6, 4, 1]])/412
+                        [1, 4, 6, 4, 1]])/25
     kernel_4 = np.array([[-1,-1,-1], [-1,8,-1], [-1,-1,-1]]) #detecta mas o menos los bordes
     return kernel_4
 
@@ -122,7 +122,6 @@ def combinar_bordes(img, kernel_x, kernel_y):
     return grad_total
 
 
-
 def kernel_bordes():
     kernel_vertical = np.array([[-1, 0, 1],
                                 [-2, 0, 2],
@@ -132,10 +131,31 @@ def kernel_bordes():
                                   [1, 2, 1]])
     return kernel_vertical, kernel_horizontal
 
+def max_pooling(img, kernel_size):
+    img = umbralizar_imagen(img, 127)
+    m, n = img.shape
+    m_new = m // kernel_size
+    n_new = n // kernel_size
+    print(m,n,' New: ', m_new, n_new)
+    img_a = np.zeros((m_new, n_new))
+    for i in range(m_new):
+        for j in range(n_new):
+            img_a[i, j] = np.max(img[i*kernel_size:(i+1)*kernel_size, j*kernel_size:(j+1)*kernel_size])
+
+    #img_a=umbralizar_imagen(img_a, 127)
+    return img_a
+
+def umbralizar_imagen(img, umbral):
+    img_a = img.copy()
+    img_a[img_a < umbral] = 0
+    img_a[img_a >= umbral] = 255
+    return img_a
+
 def main():
     #img = leer_imagen('image_process/cyberpunk_citty.webp')
     #img = leer_imagen('image_process/lena.tif')
-    img = leer_imagen('image_process/JP.jpg')
+    #img = leer_imagen('image_process/JP.jpg')
+    img = leer_imagen('image_process/old_pic.jpg')
     kernel_vertical, kernel_horizontal = kernel_bordes()
 
     #Convertir imagen a escala de grises
@@ -145,7 +165,7 @@ def main():
     # Filtrar imagen con los diferentes kernels
     img_vertical = filtro_cv2(img, kernel_vertical)
     img_horizontal = filtro_cv2(img, kernel_horizontal)
-    img_combined = combinar_bordes(img, kernel_vertical, kernel_horizontal)
+    img_combined = max_pooling(combinar_bordes(img, kernel_vertical, kernel_horizontal),2)
 
     # Mostrar las imágenes resultantes
     plt.figure(figsize=(10, 10))
