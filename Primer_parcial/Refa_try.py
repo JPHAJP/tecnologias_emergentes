@@ -96,7 +96,7 @@ modelo.fit(X_train, y_train)
 y_pred = modelo.predict(X_test)
 
 # Evaluar el modelo
-print("Error cuadrático medio:", mean_squared_error(y_test, y_pred))
+#print("Error cuadrático medio:", mean_squared_error(y_test, y_pred))
 print("R2 score:", r2_score(y_test, y_pred))
 
 # Graficar las predicciones vs los valores reales

@@ -132,7 +132,7 @@ def kernel_bordes():
     return kernel_vertical, kernel_horizontal
 
 def max_pooling(img, kernel_size):
-    img = umbralizar_imagen(img, 127)
+    #img = umbralizar_imagen(img, 127)
     m, n = img.shape
     m_new = m // kernel_size
     n_new = n // kernel_size
@@ -152,11 +152,11 @@ def umbralizar_imagen(img, umbral):
     return img_a
 
 def main():
-    #img = leer_imagen('image_process/cyberpunk_citty.webp')
+    img = leer_imagen('image_process/cyberpunk_citty.webp')
     #img = leer_imagen('image_process/lena.tif')
     #img = leer_imagen('image_process/JP.jpg')
-    img = leer_imagen('image_process/old_pic.jpg')
-    kernel_vertical, kernel_horizontal = kernel_bordes()
+    #img = leer_imagen('image_process/old_pic.jpg')
+    kernel_vertical, kernel_horizontal = kernel_bordes()    
 
     #Convertir imagen a escala de grises
     if len(img.shape) == 3:
@@ -165,29 +165,29 @@ def main():
     # Filtrar imagen con los diferentes kernels
     img_vertical = filtro_cv2(img, kernel_vertical)
     img_horizontal = filtro_cv2(img, kernel_horizontal)
-    img_combined = max_pooling(combinar_bordes(img, kernel_vertical, kernel_horizontal),2)
+    img_combined = max_pooling(combinar_bordes(img, kernel_vertical, kernel_horizontal),4)
 
     # Mostrar las imágenes resultantes
     plt.figure(figsize=(10, 10))
     plt.subplot(2, 2, 1)
-    plt.imshow(img, cmap='gray')
+    plt.imshow(img, cmap='gray') 
     plt.title('Imagen Original')
-    plt.axis('off')
+    #plt.axis('off')
 
     plt.subplot(2, 2, 2)
     plt.imshow(img_vertical, cmap='gray')
     plt.title('Bordes Verticales')
-    plt.axis('off')
+    #plt.axis('off')
 
     plt.subplot(2, 2, 3)
     plt.imshow(img_horizontal, cmap='gray')
     plt.title('Bordes Horizontales')
-    plt.axis('off')
+    #plt.axis('off')
 
     plt.subplot(2, 2, 4)
     plt.imshow(img_combined, cmap='gray')
     plt.title('Todos los Bordes')
-    plt.axis('off')
+    #plt.axis('off')
 
     plt.tight_layout()
     plt.show()

@@ -1,2 +1,6 @@
 /venv
 .venv
+
+/tf_cuda_env
+
+/Rock_Scissors_Paper/images
