@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
-import tensorflow_hub as hub
+#import tensorflow_hub as hub
 
 def recortar_imagen(img, x1, y1, x2, y2):
     img_a = img.copy()
