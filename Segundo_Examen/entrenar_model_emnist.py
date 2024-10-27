@@ -96,7 +96,7 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
               loss='categorical_crossentropy', metrics=['accuracy'])
 
 # Entrenar el modelo con data augmentation
-model_history = model.fit(datagen.flow(X_train, y_train, batch_size=128), epochs=200,
+model_history = model.fit(datagen.flow(X_train, y_train, batch_size=128), epochs=2,
                           validation_data=(X_test, y_test), callbacks=[early_stopping, reduce_lr])
 
 

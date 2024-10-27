@@ -40,7 +40,7 @@ def invertir_imagen(img):
     return cv2.bitwise_not(img)
 
 # Función para redimensionar y rellenar caracteres al mismo tamaño
-def ajustar_caracteres(chars, target_size=(20, 20)):
+def ajustar_caracteres(chars, target_size=(24, 24)):
     chars_a = []
     for char in chars:
         # Redimensionar al tamaño objetivo, manteniendo la proporción
@@ -57,7 +57,7 @@ def mostrar_caracteres(chars):
     plt.show()
 
 # Función para agregar un contorno negro de 8px a los caracteres
-def contorno(chars, border_size=8):
+def contorno(chars, border_size=4):
     chars_a = []
     for char in chars:
         # Añadir un borde negro de 8 píxeles alrededor de la imagen del carácter
