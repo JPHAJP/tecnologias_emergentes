@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 
-def draw_border(img, top_left, bottom_right, color=(0, 255, 0), thickness=10, line_length_x=200, line_length_y=200):
+def draw_border(img, top_left, bottom_right, color=(0, 255, 0), thickness=2, line_length_x=100, line_length_y=100):
     x1, y1 = top_left
     x2, y2 = bottom_right
 
@@ -27,7 +27,7 @@ def draw_border(img, top_left, bottom_right, color=(0, 255, 0), thickness=10, li
 results = pd.read_csv('./test_interpolated.csv')
 
 # load video
-video_path = 'Autosegment/sample.mp4'
+video_path = 'Autosegment/Plate.mp4'
 cap = cv2.VideoCapture(video_path)
 
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Specify the codec
@@ -70,12 +70,12 @@ while ret:
         for row_indx in range(len(df_)):
             # draw car
             car_x1, car_y1, car_x2, car_y2 = ast.literal_eval(df_.iloc[row_indx]['car_bbox'].replace('[ ', '[').replace('   ', ' ').replace('  ', ' ').replace(' ', ','))
-            draw_border(frame, (int(car_x1), int(car_y1)), (int(car_x2), int(car_y2)), (0, 255, 0), 25,
-                        line_length_x=200, line_length_y=200)
+            draw_border(frame, (int(car_x1), int(car_y1)), (int(car_x2), int(car_y2)), (0, 255, 0), 2,
+                        line_length_x=100, line_length_y=100)
 
             # draw license plate
             x1, y1, x2, y2 = ast.literal_eval(df_.iloc[row_indx]['license_plate_bbox'].replace('[ ', '[').replace('   ', ' ').replace('  ', ' ').replace(' ', ','))
-            cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 0, 255), 12)
+            cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 0, 255), 4)
 
             # crop license plate
             license_crop = license_plate[df_.iloc[row_indx]['car_id']]['license_crop']

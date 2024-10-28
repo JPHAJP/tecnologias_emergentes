@@ -1,13 +1,12 @@
 
 import cv2
-
 import util
 import sys
 import os
 import torch
 
 # Agregar la ruta del archivo sort.py a sys.path
-sys.path.append(os.path.abspath('/home/jpha/Documents/tecnologias_emergentes/sort'))
+sys.path.append(os.path.abspath('/home/jpha/Documents/tecnologias_emergentes/Autosegment'))
 
 from sort import *
 from util import get_car, read_license_plate, write_csv
@@ -27,7 +26,7 @@ coco_model = YOLO('yolov8n.pt').to(device)
 license_plate_detector = YOLO('Autosegment/license_plate_detector.pt').to(device)
 
 # load video
-cap = cv2.VideoCapture('Autosegment/sample.mp4')
+cap = cv2.VideoCapture('Autosegment/Plate.mp4')
 
 vehicles = [2, 3, 5, 7]
 
